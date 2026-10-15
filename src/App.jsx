@@ -1,38 +1,34 @@
+import Home from './pages/Home'
+import { Routes, Route } from 'react-router-dom'
 import Header from './components/Header/Header'
+import Projects from './pages/Projects'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
 function App() {
   return (
     <div id="wrapper">
-      <Header/>
+      <Header />
 
       <div id="main">
-        <article className="post">
-          <header>
-            <div className="title">
-              <h2>Welcome to MakerHub</h2>
-              <p>Share your DIY projects with the community</p>
-            </div>
-          </header>
+        <Routes>
+          <Route path="/" element={<Home />} />
 
-          <a href="/projects" className="image featured">
-            <img src="/images/pic01.jpg" alt="DIY project" />
-          </a>
+          <Route
+            path="/projects"
+            element={<Projects/>}
+          />
 
-          <p>
-            Discover DIY projects about electronics, 3D printing,
-            CNC machines, programming and much more.
-          </p>
+          <Route
+            path="/login"
+            element={<Login/>}
+          />
 
-          <footer>
-            <ul className="actions">
-              <li>
-                <a href="/projects" className="button large">
-                  Explore Projects
-                </a>
-              </li>
-            </ul>
-          </footer>
-        </article>
+          <Route
+            path="/register"
+            element={<Register/>}
+          />
+        </Routes>
       </div>
     </div>
   )
