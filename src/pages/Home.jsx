@@ -11,7 +11,7 @@ function Home() {
       </header>
 
         <Link to="/projects" className="image featured">
-        <img src="/images/pic01.jpg" alt="DIY project" />
+        <img src="/images/makerhub_main_pic.jpg" alt="DIY project" />
         </Link>
 
       <p>
