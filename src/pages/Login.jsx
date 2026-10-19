@@ -1,13 +1,27 @@
 import { useState } from 'react'
+import { supabase } from '../lib/supabase'
+import { useNavigate } from 'react-router-dom'
 function Login() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
   e.preventDefault()
+  setError('')
 
-  console.log('Login form submitted')
-  console.log('Email:', email)
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (error) {
+    setError(error.message)
+    return
+  }
+
+    navigate('/')
 }
 
   return (
@@ -47,11 +61,17 @@ function Login() {
             />
           </div>
 
-          <div className="col-12">
-            <button type="submit" className="button large">
-              Login
-            </button>
-          </div>
+          {error && (
+  <div className="col-12">
+    <p style={{ color: 'red' }}>{error}</p>
+  </div>
+)}
+
+<div className="col-12">
+  <button type="submit" className="button large">
+    Login
+  </button>
+</div>
         </div>
       </form>
     </article>

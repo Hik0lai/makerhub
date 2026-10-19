@@ -1,5 +1,6 @@
 
 import { useState } from 'react'
+import { supabase } from '../lib/supabase'
 
 function Register() {
   const [email, setEmail] = useState('')
@@ -7,18 +8,28 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
 
-  function handleSubmit(e) {
-    e.preventDefault()
+  async function handleSubmit(e) {
+  e.preventDefault()
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
-
-    setError('')
-    console.log('Register form submitted')
-    console.log('Email:', email)
+  if (password !== confirmPassword) {
+    setError('Passwords do not match')
+    return
   }
+
+  setError('')
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+  })
+
+  if (error) {
+    setError(error.message)
+    return
+  }
+
+  alert('Registration successful! Please check your email to confirm your account.')
+}
 
   return (
     <article className="post">
