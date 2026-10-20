@@ -3609,3 +3609,24 @@ input, select, textarea {
 			}
 
 		}
+
+/* MakerHub logout navigation button */
+#header .links .logout-button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  height: auto;
+  line-height: inherit;
+
+  font-family: "Raleway", Helvetica, sans-serif;
+  font-size: 0.7em;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: inherit !important;
+
+  cursor: pointer;
+}
