@@ -1,28 +1,33 @@
-import { useState } from 'react'
-import { supabase } from '../lib/supabase'
-import { useNavigate } from 'react-router-dom'
+import { useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useNavigate, useLocation } from "react-router-dom";
 function Login() {
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const navigate = useNavigate();
+
+  const location = useLocation();
+  const from = location.state?.from;
+  const redirectTo = from ? `${from.pathname}${from.search}${from.hash}` : "/";
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   async function handleSubmit(e) {
-  e.preventDefault()
-  setError('')
+    e.preventDefault();
+    setError("");
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (error) {
-    setError(error.message)
-    return
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    navigate(redirectTo, { replace: true })
   }
-
-    navigate('/')
-}
 
   return (
     <article className="post">
@@ -42,7 +47,7 @@ function Login() {
               id="email"
               name="email"
               placeholder="Enter your email"
-              value = {email}
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
@@ -55,27 +60,27 @@ function Login() {
               id="password"
               name="password"
               placeholder="Enter your password"
-              value = {password}
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
 
           {error && (
-  <div className="col-12">
-    <p style={{ color: 'red' }}>{error}</p>
-  </div>
-)}
+            <div className="col-12">
+              <p style={{ color: "red" }}>{error}</p>
+            </div>
+          )}
 
-<div className="col-12">
-  <button type="submit" className="button large">
-    Login
-  </button>
-</div>
+          <div className="col-12">
+            <button type="submit" className="button large">
+              Login
+            </button>
+          </div>
         </div>
       </form>
     </article>
-  )
+  );
 }
 
-export default Login
+export default Login;
