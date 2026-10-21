@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import CreateProject from './pages/CreateProject'
 import ProjectDetails from './pages/ProjectDetails'
+import EditProject from './pages/EditProject'
 
 function App() {
   return (
@@ -37,6 +38,10 @@ function App() {
           <Route 
             path="/projects/:id" 
             element={<ProjectDetails />} 
+          />
+          <Route 
+            path="/projects/:id/edit" 
+            element={<EditProject />} 
           />
         </Routes>
       </div>
