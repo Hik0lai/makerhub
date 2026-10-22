@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Link } from "react-router-dom";
@@ -35,6 +36,14 @@ function Projects() {
         </div>
       </header>
 
+      <ul className="actions">
+        <li>
+          <Link to="/projects/create" className="button large">
+            Create New Project
+          </Link>
+        </li>
+      </ul>
+
       {loading && <p>Loading projects...</p>}
 
       {error && <p>Error: {error}</p>}
@@ -48,8 +57,11 @@ function Projects() {
         projects.map((project) => (
           <div key={project.id}>
             <h3>
-              <Link to={`/projects/${project.id}`}>{project.title}</Link>
+              <Link to={`/projects/${project.id}`}>
+                {project.title}
+              </Link>
             </h3>
+
             <p>{project.description}</p>
 
             {project.image_url && (
