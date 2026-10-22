@@ -140,6 +140,37 @@ function ProjectDetails() {
     setCommentText("");
   }
 
+  async function handleDeleteComment(commentId) {
+    if (!user) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this comment?",
+    );
+
+    if (!confirmed) return;
+
+    const { data, error } = await supabase
+      .from("comments")
+      .delete()
+      .eq("id", commentId)
+      .eq("user_id", user.id)
+      .select("id");
+
+    if (error) {
+      alert("Failed to delete comment: " + error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert("Comment was not deleted.");
+      return;
+    }
+
+    setComments((previousComments) =>
+      previousComments.filter((comment) => comment.id !== commentId),
+    );
+  }
+
   if (loading) {
     return <p>Loading project...</p>;
   }
@@ -232,7 +263,20 @@ function ProjectDetails() {
           comments.map((comment) => (
             <div key={comment.id}>
               <p>{comment.content}</p>
+
               <small>{new Date(comment.created_at).toLocaleString()}</small>
+
+              {user?.id === comment.user_id && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteComment(comment.id)}
+                  >
+                    Delete Comment
+                  </button>
+                </div>
+              )}
+
               <hr />
             </div>
           ))}
