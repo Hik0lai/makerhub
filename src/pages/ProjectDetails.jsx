@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -7,7 +8,9 @@ function ProjectDetails() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+
   const [deleting, setDeleting] = useState(false);
+
   const [likesCount, setLikesCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [likesLoading, setLikesLoading] = useState(true);
@@ -17,6 +20,7 @@ function ProjectDetails() {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
 
@@ -44,7 +48,9 @@ function ProjectDetails() {
       } else {
         setLikesCount(data.length);
         setIsLiked(
-          user ? data.some((like) => like.user_id === user.id) : false,
+          user
+            ? data.some((like) => like.user_id === user.id)
+            : false
         );
       }
 
@@ -90,6 +96,8 @@ function ProjectDetails() {
   }, [id]);
 
   useEffect(() => {
+    let active = true;
+
     async function fetchProject() {
       setLoading(true);
       setError(null);
@@ -99,6 +107,8 @@ function ProjectDetails() {
         .select("*")
         .eq("id", id)
         .maybeSingle();
+
+      if (!active) return;
 
       if (error) {
         setError(error.message);
@@ -110,6 +120,10 @@ function ProjectDetails() {
     }
 
     fetchProject();
+
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   async function handleDelete() {
@@ -118,7 +132,7 @@ function ProjectDetails() {
     }
 
     const confirmed = window.confirm(
-      "Are you sure you want to delete this project?",
+      "Are you sure you want to delete this project?"
     );
 
     if (!confirmed) return;
@@ -175,7 +189,11 @@ function ProjectDetails() {
       return;
     }
 
-    setComments((previousComments) => [data, ...previousComments]);
+    setComments((previousComments) => [
+      data,
+      ...previousComments,
+    ]);
+
     setCommentText("");
   }
 
@@ -183,7 +201,7 @@ function ProjectDetails() {
     if (!user) return;
 
     const confirmed = window.confirm(
-      "Are you sure you want to delete this comment?",
+      "Are you sure you want to delete this comment?"
     );
 
     if (!confirmed) return;
@@ -206,7 +224,9 @@ function ProjectDetails() {
     }
 
     setComments((previousComments) =>
-      previousComments.filter((comment) => comment.id !== commentId),
+      previousComments.filter(
+        (comment) => comment.id !== commentId
+      )
     );
   }
 
@@ -235,10 +255,12 @@ function ProjectDetails() {
         setLikesCount((count) => Math.max(0, count - 1));
       }
     } else {
-      const { error } = await supabase.from("project_likes").insert({
-        project_id: id,
-        user_id: user.id,
-      });
+      const { error } = await supabase
+        .from("project_likes")
+        .insert({
+          project_id: id,
+          user_id: user.id,
+        });
 
       if (error) {
         setLikesError(error.message);
@@ -282,7 +304,10 @@ function ProjectDetails() {
 
       <p>{project.description}</p>
 
-      <p>Created: {new Date(project.created_at).toLocaleDateString()}</p>
+      <p>
+        Created:{" "}
+        {new Date(project.created_at).toLocaleDateString()}
+      </p>
 
       <section>
         <h3>Project Likes</h3>
@@ -290,41 +315,75 @@ function ProjectDetails() {
         {likesLoading ? (
           <p>Loading likes...</p>
         ) : (
-          <>
-            <p>
-              {likesCount} {likesCount === 1 ? "like" : "likes"}
-            </p>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "20px",
+              marginBottom: "30px",
+              flexWrap: "wrap",
+            }}
+          >
+            <span>
+              {likesCount}{" "}
+              {likesCount === 1 ? "like" : "likes"}
+            </span>
 
             {user ? (
               <button
                 type="button"
                 onClick={handleToggleLike}
-                disabled={updatingLike || Boolean(likesError)}
+                disabled={
+                  updatingLike || Boolean(likesError)
+                }
+                style={{
+                  borderRadius: "25px",
+                  padding: "0 24px",
+                }}
               >
-                {updatingLike ? "Updating..." : isLiked ? "Unlike ♥" : "Like ♡"}
+                {updatingLike
+                  ? "Updating..."
+                  : isLiked
+                    ? "Unlike ♥"
+                    : "Like ♡"}
               </button>
             ) : (
-              <p>
-                Please <Link to="/login">login</Link> to like this project.
-              </p>
+              <span>
+                Please{" "}
+                <Link to="/login">login</Link>{" "}
+                to like this project.
+              </span>
             )}
-          </>
+          </div>
         )}
 
-        {likesError && <p style={{ color: "red" }}>Error: {likesError}</p>}
+        {likesError && (
+          <p style={{ color: "red" }}>
+            Error: {likesError}
+          </p>
+        )}
       </section>
 
       {user?.id === project.user_id && (
         <ul className="actions">
           <li>
-            <Link to={`/projects/${project.id}/edit`} className="button">
+            <Link
+              to={`/projects/${project.id}/edit`}
+              className="button"
+            >
               Edit Project
             </Link>
           </li>
 
           <li>
-            <button type="button" onClick={handleDelete} disabled={deleting}>
-              {deleting ? "Deleting..." : "Delete Project"}
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting
+                ? "Deleting..."
+                : "Delete Project"}
             </button>
           </li>
         </ul>
@@ -336,11 +395,16 @@ function ProjectDetails() {
         {user ? (
           <form onSubmit={handleCommentSubmit}>
             <div className="field">
-              <label htmlFor="comment">Write a comment</label>
+              <label htmlFor="comment">
+                Write a comment
+              </label>
+
               <textarea
                 id="comment"
                 value={commentText}
-                onChange={(event) => setCommentText(event.target.value)}
+                onChange={(event) =>
+                  setCommentText(event.target.value)
+                }
                 maxLength={1000}
                 rows={3}
                 required
@@ -349,24 +413,39 @@ function ProjectDetails() {
 
             <button
               type="submit"
-              disabled={submittingComment || !commentText.trim()}
+              disabled={
+                submittingComment ||
+                !commentText.trim()
+              }
             >
-              {submittingComment ? "Posting..." : "Post Comment"}
+              {submittingComment
+                ? "Posting..."
+                : "Post Comment"}
             </button>
           </form>
         ) : (
           <p>
-            Please <Link to="/login">login</Link> to leave a comment.
+            Please{" "}
+            <Link to="/login">login</Link>{" "}
+            to leave a comment.
           </p>
         )}
 
-        {commentsLoading && <p>Loading comments...</p>}
-
-        {commentsError && <p>Error: {commentsError}</p>}
-
-        {!commentsLoading && !commentsError && comments.length === 0 && (
-          <p>No comments yet. Be the first to comment!</p>
+        {commentsLoading && (
+          <p>Loading comments...</p>
         )}
+
+        {commentsError && (
+          <p>Error: {commentsError}</p>
+        )}
+
+        {!commentsLoading &&
+          !commentsError &&
+          comments.length === 0 && (
+            <p>
+              No comments yet. Be the first to comment!
+            </p>
+          )}
 
         {!commentsLoading &&
           !commentsError &&
@@ -374,13 +453,19 @@ function ProjectDetails() {
             <div key={comment.id}>
               <p>{comment.content}</p>
 
-              <small>{new Date(comment.created_at).toLocaleString()}</small>
+              <small>
+                {new Date(
+                  comment.created_at
+                ).toLocaleString()}
+              </small>
 
               {user?.id === comment.user_id && (
                 <div>
                   <button
                     type="button"
-                    onClick={() => handleDeleteComment(comment.id)}
+                    onClick={() =>
+                      handleDeleteComment(comment.id)
+                    }
                   >
                     Delete Comment
                   </button>
