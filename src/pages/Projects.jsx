@@ -9,7 +9,12 @@ function Projects() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let active = true;
+
     async function fetchProjects() {
+      setLoading(true);
+      setError(null);
+
       const { data, error } = await supabase
         .from("projects")
         .select(`
@@ -20,17 +25,35 @@ function Projects() {
         `)
         .order("created_at", { ascending: false });
 
+      if (!active) return;
+
       if (error) {
         setError(error.message);
       } else {
-        setProjects(data);
+        setProjects(data || []);
       }
 
       setLoading(false);
     }
 
     fetchProjects();
+
+    return () => {
+      active = false;
+    };
   }, []);
+
+  function getShortDescription(description) {
+    if (!description) return "";
+
+    const maxLength = 180;
+
+    if (description.length <= maxLength) {
+      return description;
+    }
+
+    return description.slice(0, maxLength).trimEnd() + "...";
+  }
 
   return (
     <article className="post">
@@ -43,7 +66,10 @@ function Projects() {
 
       <ul className="actions">
         <li>
-          <Link to="/projects/create" className="button large">
+          <Link
+            to="/projects/create"
+            className="button large"
+          >
             Create New Project
           </Link>
         </li>
@@ -60,7 +86,10 @@ function Projects() {
       {!loading &&
         !error &&
         projects.map((project) => (
-          <div key={project.id}>
+          <div
+            key={project.id}
+            style={{ marginBottom: "35px" }}
+          >
             <h3>
               <Link to={`/projects/${project.id}`}>
                 {project.title}
@@ -72,18 +101,32 @@ function Projects() {
               {project.profiles?.display_name || "Unknown"}
               {" | "}
               <strong>Created on:</strong>{" "}
-              {new Date(project.created_at).toLocaleDateString()}
+              {new Date(
+                project.created_at
+              ).toLocaleDateString()}
             </p>
 
-            <p>{project.description}</p>
-
             {project.image_url && (
-              <img
-                src={project.image_url}
-                alt={project.title}
-                style={{ maxWidth: "100%" }}
-              />
+              <Link to={`/projects/${project.id}`}>
+                <img
+                  src={project.image_url}
+                  alt={project.title}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    maxWidth: "600px",
+                    maxHeight: "280px",
+                    objectFit: "cover",
+                    borderRadius: "6px",
+                    marginBottom: "20px",
+                  }}
+                />
+              </Link>
             )}
+
+            <p>
+              {getShortDescription(project.description)}
+            </p>
 
             <ul className="actions">
               <li>
