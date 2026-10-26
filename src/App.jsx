@@ -1,3 +1,4 @@
+
 import Home from "./pages/Home";
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
@@ -8,6 +9,7 @@ import CreateProject from "./pages/CreateProject";
 import ProjectDetails from "./pages/ProjectDetails";
 import EditProject from "./pages/EditProject";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import GuestRoute from "./components/GuestRoute/GuestRoute";
 
 function App() {
   return (
@@ -20,9 +22,24 @@ function App() {
 
           <Route path="/projects" element={<Projects />} />
 
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <Login />
+              </GuestRoute>
+            }
+          />
 
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/register"
+            element={
+              <GuestRoute>
+                <Register />
+              </GuestRoute>
+            }
+          />
+
           <Route
             path="/projects/create"
             element={
@@ -31,7 +48,12 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/projects/:id" element={<ProjectDetails />} />
+
+          <Route
+            path="/projects/:id"
+            element={<ProjectDetails />}
+          />
+
           <Route
             path="/projects/:id/edit"
             element={

@@ -1,0 +1,19 @@
+
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+
+function GuestRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (user) {
+    return <Navigate to="/projects" replace />;
+  }
+
+  return children;
+}
+
+export default GuestRoute;
