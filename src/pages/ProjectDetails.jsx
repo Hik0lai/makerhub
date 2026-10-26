@@ -8,6 +8,11 @@ function ProjectDetails() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likesLoading, setLikesLoading] = useState(true);
+  const [likesError, setLikesError] = useState(null);
+  const [updatingLike, setUpdatingLike] = useState(false);
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,6 +23,40 @@ function ProjectDetails() {
   const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [commentsError, setCommentsError] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function fetchLikes() {
+      setLikesLoading(true);
+      setLikesError(null);
+      setIsLiked(false);
+
+      const { data, error } = await supabase
+        .from("project_likes")
+        .select("user_id")
+        .eq("project_id", id);
+
+      if (!active) return;
+
+      if (error) {
+        setLikesError(error.message);
+      } else {
+        setLikesCount(data.length);
+        setIsLiked(
+          user ? data.some((like) => like.user_id === user.id) : false,
+        );
+      }
+
+      setLikesLoading(false);
+    }
+
+    fetchLikes();
+
+    return () => {
+      active = false;
+    };
+  }, [id, user?.id]);
 
   useEffect(() => {
     let active = true;
@@ -171,6 +210,47 @@ function ProjectDetails() {
     );
   }
 
+  async function handleToggleLike() {
+    if (!user || likesLoading || updatingLike || likesError) {
+      return;
+    }
+
+    setUpdatingLike(true);
+    setLikesError(null);
+
+    if (isLiked) {
+      const { data, error } = await supabase
+        .from("project_likes")
+        .delete()
+        .eq("project_id", id)
+        .eq("user_id", user.id)
+        .select("user_id");
+
+      if (error) {
+        setLikesError(error.message);
+      } else if (!data || data.length === 0) {
+        setLikesError("Like was not removed.");
+      } else {
+        setIsLiked(false);
+        setLikesCount((count) => Math.max(0, count - 1));
+      }
+    } else {
+      const { error } = await supabase.from("project_likes").insert({
+        project_id: id,
+        user_id: user.id,
+      });
+
+      if (error) {
+        setLikesError(error.message);
+      } else {
+        setIsLiked(true);
+        setLikesCount((count) => count + 1);
+      }
+    }
+
+    setUpdatingLike(false);
+  }
+
   if (loading) {
     return <p>Loading project...</p>;
   }
@@ -203,6 +283,36 @@ function ProjectDetails() {
       <p>{project.description}</p>
 
       <p>Created: {new Date(project.created_at).toLocaleDateString()}</p>
+
+      <section>
+        <h3>Project Likes</h3>
+
+        {likesLoading ? (
+          <p>Loading likes...</p>
+        ) : (
+          <>
+            <p>
+              {likesCount} {likesCount === 1 ? "like" : "likes"}
+            </p>
+
+            {user ? (
+              <button
+                type="button"
+                onClick={handleToggleLike}
+                disabled={updatingLike || Boolean(likesError)}
+              >
+                {updatingLike ? "Updating..." : isLiked ? "Unlike ♥" : "Like ♡"}
+              </button>
+            ) : (
+              <p>
+                Please <Link to="/login">login</Link> to like this project.
+              </p>
+            )}
+          </>
+        )}
+
+        {likesError && <p style={{ color: "red" }}>Error: {likesError}</p>}
+      </section>
 
       {user?.id === project.user_id && (
         <ul className="actions">
