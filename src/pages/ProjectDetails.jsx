@@ -9,6 +9,9 @@ function ProjectDetails() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
   const [likesCount, setLikesCount] = useState(0);
@@ -17,17 +20,45 @@ function ProjectDetails() {
   const [likesError, setLikesError] = useState(null);
   const [updatingLike, setUpdatingLike] = useState(false);
 
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const [commentText, setCommentText] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
-
   const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [commentsError, setCommentsError] = useState(null);
+  const [commentText, setCommentText] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
 
+  // Load project and author
+  useEffect(() => {
+    let active = true;
+
+    async function fetchProject() {
+      setLoading(true);
+      setError(null);
+
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*, profiles(display_name)")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (!active) return;
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setProject(data);
+      }
+
+      setLoading(false);
+    }
+
+    fetchProject();
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  // Load project likes
   useEffect(() => {
     let active = true;
 
@@ -64,6 +95,7 @@ function ProjectDetails() {
     };
   }, [id, user?.id]);
 
+  // Load comments
   useEffect(() => {
     let active = true;
 
@@ -95,39 +127,14 @@ function ProjectDetails() {
     };
   }, [id]);
 
-  useEffect(() => {
-    let active = true;
-
-    async function fetchProject() {
-      setLoading(true);
-      setError(null);
-
-      const { data, error } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-
-      if (!active) return;
-
-      if (error) {
-        setError(error.message);
-      } else {
-        setProject(data);
-      }
-
-      setLoading(false);
-    }
-
-    fetchProject();
-
-    return () => {
-      active = false;
-    };
-  }, [id]);
-
+  // Delete project
   async function handleDelete() {
-    if (!user || !project || user.id !== project.user_id || deleting) {
+    if (
+      !user ||
+      !project ||
+      user.id !== project.user_id ||
+      deleting
+    ) {
       return;
     }
 
@@ -147,7 +154,6 @@ function ProjectDetails() {
       .select("id");
 
     if (error) {
-      console.error("Error deleting project:", error.message);
       alert("Failed to delete project: " + error.message);
       setDeleting(false);
       return;
@@ -162,6 +168,7 @@ function ProjectDetails() {
     navigate("/projects");
   }
 
+  // Add comment
   async function handleCommentSubmit(event) {
     event.preventDefault();
 
@@ -189,14 +196,11 @@ function ProjectDetails() {
       return;
     }
 
-    setComments((previousComments) => [
-      data,
-      ...previousComments,
-    ]);
-
+    setComments((previous) => [data, ...previous]);
     setCommentText("");
   }
 
+  // Delete comment
   async function handleDeleteComment(commentId) {
     if (!user) return;
 
@@ -223,15 +227,19 @@ function ProjectDetails() {
       return;
     }
 
-    setComments((previousComments) =>
-      previousComments.filter(
-        (comment) => comment.id !== commentId
-      )
+    setComments((previous) =>
+      previous.filter((comment) => comment.id !== commentId)
     );
   }
 
+  // Like or unlike project
   async function handleToggleLike() {
-    if (!user || likesLoading || updatingLike || likesError) {
+    if (
+      !user ||
+      likesLoading ||
+      updatingLike ||
+      likesError
+    ) {
       return;
     }
 
@@ -305,11 +313,15 @@ function ProjectDetails() {
       <p>{project.description}</p>
 
       <p>
-        Created:{" "}
+        <strong>Created by:</strong>{" "}
+        {project.profiles?.display_name || "Unknown"}
+        {" | "}
+        <strong>Created on:</strong>{" "}
         {new Date(project.created_at).toLocaleDateString()}
       </p>
 
-      <section>
+      {/* Project likes */}
+      <section style={{ marginBottom: "30px" }}>
         <h3>Project Likes</h3>
 
         {likesLoading ? (
@@ -318,13 +330,15 @@ function ProjectDetails() {
           <div
             style={{
               display: "flex",
+              flexDirection: "row",
               alignItems: "center",
+              justifyContent: "flex-start",
               gap: "20px",
-              marginBottom: "30px",
-              flexWrap: "wrap",
+              flexWrap: "nowrap",
+              marginBottom: "20px",
             }}
           >
-            <span>
+            <span style={{ whiteSpace: "nowrap" }}>
               {likesCount}{" "}
               {likesCount === 1 ? "like" : "likes"}
             </span>
@@ -339,6 +353,11 @@ function ProjectDetails() {
                 style={{
                   borderRadius: "25px",
                   padding: "0 24px",
+                  width: "auto",
+                  minWidth: "110px",
+                  flexShrink: 0,
+                  margin: 0,
+                  whiteSpace: "nowrap",
                 }}
               >
                 {updatingLike
@@ -364,6 +383,7 @@ function ProjectDetails() {
         )}
       </section>
 
+      {/* Edit and delete */}
       {user?.id === project.user_id && (
         <ul className="actions">
           <li>
@@ -374,7 +394,6 @@ function ProjectDetails() {
               Edit Project
             </Link>
           </li>
-
           <li>
             <button
               type="button"
@@ -389,6 +408,7 @@ function ProjectDetails() {
         </ul>
       )}
 
+      {/* Comments */}
       <section>
         <h3>Comments</h3>
 
