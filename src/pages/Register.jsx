@@ -1,35 +1,42 @@
-
-import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { useState } from "react";
+import { supabase } from "../lib/supabase";
 
 function Register() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   async function handleSubmit(e) {
-  e.preventDefault()
+    e.preventDefault();
 
-  if (password !== confirmPassword) {
-    setError('Passwords do not match')
-    return
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setError("");
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: displayName.trim(),
+        },
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    alert(
+      "Registration successful! Please check your email to confirm your account.",
+    );
   }
-
-  setError('')
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-  })
-
-  if (error) {
-    setError(error.message)
-    return
-  }
-
-  alert('Registration successful! Please check your email to confirm your account.')
-}
 
   return (
     <article className="post">
@@ -42,6 +49,19 @@ function Register() {
 
       <form onSubmit={handleSubmit}>
         <div className="row gtr-uniform">
+          <div className="col-12">
+            <label htmlFor="displayName">Display Name</label>
+            <input
+              type="text"
+              id="displayName"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              minLength={3}
+              maxLength={30}
+              placeholder="e.g. NikolayDIY"
+              required
+            />
+          </div>
 
           <div className="col-12">
             <label htmlFor="email">Email</label>
@@ -80,7 +100,7 @@ function Register() {
 
           {error && (
             <div className="col-12">
-              <p style={{ color: 'red' }}>{error}</p>
+              <p style={{ color: "red" }}>{error}</p>
             </div>
           )}
 
@@ -89,11 +109,10 @@ function Register() {
               Register
             </button>
           </div>
-
         </div>
       </form>
     </article>
-  )
+  );
 }
 
-export default Register
+export default Register;
