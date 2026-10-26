@@ -58,7 +58,7 @@ function ProjectDetails() {
     };
   }, [id]);
 
-  // Load project likes
+  // Load likes
   useEffect(() => {
     let active = true;
 
@@ -95,7 +95,7 @@ function ProjectDetails() {
     };
   }, [id, user?.id]);
 
-  // Load comments
+  // Load comments with author names
   useEffect(() => {
     let active = true;
 
@@ -105,7 +105,7 @@ function ProjectDetails() {
 
       const { data, error } = await supabase
         .from("comments")
-        .select("*")
+        .select("*, profiles(display_name)")
         .eq("project_id", id)
         .order("created_at", { ascending: false });
 
@@ -114,7 +114,7 @@ function ProjectDetails() {
       if (error) {
         setCommentsError(error.message);
       } else {
-        setComments(data);
+        setComments(data || []);
       }
 
       setCommentsLoading(false);
@@ -129,12 +129,7 @@ function ProjectDetails() {
 
   // Delete project
   async function handleDelete() {
-    if (
-      !user ||
-      !project ||
-      user.id !== project.user_id ||
-      deleting
-    ) {
+    if (!user || !project || user.id !== project.user_id || deleting) {
       return;
     }
 
@@ -186,7 +181,7 @@ function ProjectDetails() {
         user_id: user.id,
         content: commentText.trim(),
       })
-      .select()
+      .select("*, profiles(display_name)")
       .single();
 
     setSubmittingComment(false);
@@ -234,12 +229,7 @@ function ProjectDetails() {
 
   // Like or unlike project
   async function handleToggleLike() {
-    if (
-      !user ||
-      likesLoading ||
-      updatingLike ||
-      likesError
-    ) {
+    if (!user || likesLoading || updatingLike || likesError) {
       return;
     }
 
@@ -347,9 +337,7 @@ function ProjectDetails() {
               <button
                 type="button"
                 onClick={handleToggleLike}
-                disabled={
-                  updatingLike || Boolean(likesError)
-                }
+                disabled={updatingLike || Boolean(likesError)}
                 style={{
                   borderRadius: "25px",
                   padding: "0 24px",
@@ -368,9 +356,7 @@ function ProjectDetails() {
               </button>
             ) : (
               <span>
-                Please{" "}
-                <Link to="/login">login</Link>{" "}
-                to like this project.
+                Please <Link to="/login">login</Link> to like this project.
               </span>
             )}
           </div>
@@ -383,7 +369,7 @@ function ProjectDetails() {
         )}
       </section>
 
-      {/* Edit and delete */}
+      {/* Edit and delete project */}
       {user?.id === project.user_id && (
         <ul className="actions">
           <li>
@@ -394,15 +380,14 @@ function ProjectDetails() {
               Edit Project
             </Link>
           </li>
+
           <li>
             <button
               type="button"
               onClick={handleDelete}
               disabled={deleting}
             >
-              {deleting
-                ? "Deleting..."
-                : "Delete Project"}
+              {deleting ? "Deleting..." : "Delete Project"}
             </button>
           </li>
         </ul>
@@ -415,10 +400,7 @@ function ProjectDetails() {
         {user ? (
           <form onSubmit={handleCommentSubmit}>
             <div className="field">
-              <label htmlFor="comment">
-                Write a comment
-              </label>
-
+              <label htmlFor="comment">Write a comment</label>
               <textarea
                 id="comment"
                 value={commentText}
@@ -433,51 +415,46 @@ function ProjectDetails() {
 
             <button
               type="submit"
-              disabled={
-                submittingComment ||
-                !commentText.trim()
-              }
+              disabled={submittingComment || !commentText.trim()}
             >
-              {submittingComment
-                ? "Posting..."
-                : "Post Comment"}
+              {submittingComment ? "Posting..." : "Post Comment"}
             </button>
           </form>
         ) : (
           <p>
-            Please{" "}
-            <Link to="/login">login</Link>{" "}
-            to leave a comment.
+            Please <Link to="/login">login</Link> to leave a comment.
           </p>
         )}
 
-        {commentsLoading && (
-          <p>Loading comments...</p>
-        )}
+        {commentsLoading && <p>Loading comments...</p>}
 
         {commentsError && (
-          <p>Error: {commentsError}</p>
+          <p style={{ color: "red" }}>
+            Error: {commentsError}
+          </p>
         )}
 
         {!commentsLoading &&
           !commentsError &&
           comments.length === 0 && (
-            <p>
-              No comments yet. Be the first to comment!
-            </p>
+            <p>No comments yet. Be the first to comment!</p>
           )}
 
         {!commentsLoading &&
           !commentsError &&
           comments.map((comment) => (
             <div key={comment.id}>
-              <p>{comment.content}</p>
+              <p style={{ marginBottom: "5px" }}>
+                <strong>
+                  {comment.profiles?.display_name || "Unknown"}
+                </strong>
+                {" · "}
+                <small>
+                  {new Date(comment.created_at).toLocaleString()}
+                </small>
+              </p>
 
-              <small>
-                {new Date(
-                  comment.created_at
-                ).toLocaleString()}
-              </small>
+              <p>{comment.content}</p>
 
               {user?.id === comment.user_id && (
                 <div>
