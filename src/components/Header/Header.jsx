@@ -20,54 +20,67 @@ function Header() {
   }
 
   return (
-    <header id="header">
-      <h1>
-        <Link to="/">MakerHub</Link>
-      </h1>
+    <>
+      <header id="header">
+        <h1>
+          <Link to="/">MakerHub</Link>
+        </h1>
 
-      <nav className="links">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
+        <nav className="links">
+          <ul>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/projects">Projects</Link></li>
 
-          <li>
-            <Link to="/projects">Projects</Link>
-          </li>
+            {!loading && (
+              user ? (
+                <>
+                  <li>
+                    <span>
+                      Welcome, <strong>{displayName}</strong>
+                    </span>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="logout-button"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li><Link to="/login">Login</Link></li>
+                  <li><Link to="/register">Register</Link></li>
+                </>
+              )
+            )}
+          </ul>
+        </nav>
+      </header>
 
-          {!loading &&
-            (user ? (
-              <>
-                <li>
-                  <span>
-                    Welcome, <strong>{displayName}</strong>
-                  </span>
-                </li>
+      <nav className="makerhub-mobile-nav">
+        <Link to="/">Home</Link>
+        <Link to="/projects">Projects</Link>
 
-                <li>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="logout-button"
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link to="/login">Login</Link>
-                </li>
-
-                <li>
-                  <Link to="/register">Register</Link>
-                </li>
-              </>
-            ))}
-        </ul>
+        {!loading && (
+          user ? (
+            <>
+              <Link to="/projects/create">Create</Link>
+              <button type="button" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">Login</Link>
+              <Link to="/register">Register</Link>
+            </>
+          )
+        )}
       </nav>
-    </header>
+    </>
   );
 }
 
