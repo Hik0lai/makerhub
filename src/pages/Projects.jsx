@@ -12,7 +12,12 @@ function Projects() {
     async function fetchProjects() {
       const { data, error } = await supabase
         .from("projects")
-        .select("*")
+        .select(`
+          *,
+          profiles (
+            display_name
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -62,6 +67,14 @@ function Projects() {
               </Link>
             </h3>
 
+            <p>
+              <strong>Created by:</strong>{" "}
+              {project.profiles?.display_name || "Unknown"}
+              {" | "}
+              <strong>Created on:</strong>{" "}
+              {new Date(project.created_at).toLocaleDateString()}
+            </p>
+
             <p>{project.description}</p>
 
             {project.image_url && (
@@ -71,6 +84,17 @@ function Projects() {
                 style={{ maxWidth: "100%" }}
               />
             )}
+
+            <ul className="actions">
+              <li>
+                <Link
+                  to={`/projects/${project.id}`}
+                  className="button"
+                >
+                  View Details
+                </Link>
+              </li>
+            </ul>
 
             <hr />
           </div>
