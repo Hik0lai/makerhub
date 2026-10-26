@@ -38,13 +38,34 @@
   }
 }
 
-/* Center authentication forms on desktop */
+/* Desktop layout */
 
 @media screen and (min-width: 981px) {
-  #main:has(input[type="password"]) {
+
+  /* Limit the width of the entire application */
+  #wrapper {
     width: 100%;
-    max-width: 850px;
+    max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  /* Keep the main content within the wrapper */
+  #main {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  /* Make login and registration pages narrower */
+  #main:has(input[type="password"]) {
+    max-width: 750px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Limit the width of authentication input fields */
+  #main:has(input[type="password"]) input {
+    max-width: 520px;
   }
 }
