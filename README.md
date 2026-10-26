@@ -43,6 +43,7 @@ https://github.com/Hik0lai/makerhub
 - Protected routes for authenticated actions
 - Loading states, form validation, and error messages
 - Persistent project, comment, and like data in Supabase
+- Responsive layout with a dedicated mobile navigation menu and constrained desktop content widths
 
 ## Project Structure
 
@@ -51,7 +52,10 @@ The React application separates page-level views, reusable components, shared au
 ```text
 makerhub/
 ├── public/
-│   └── images/                # Static project images
+│   ├── images/                # Static project images
+│   └── assets/css/
+│       ├── main.css           # Future Imperfect base styles
+│       └── makerhub-mobile.css # Mobile navigation and desktop layout overrides
 ├── src/
 │   ├── components/            # Shared UI components (including Header)
 │   ├── contexts/              # Authentication context
@@ -284,7 +288,16 @@ Authentication state is shared using `AuthContext` rather than passed through mu
 
 The application fetches projects, likes, and comments from Supabase. After successful actions, React state is updated so the interface reflects new comments or like changes without requiring a full page reload. Effects use cleanup guards where appropriate to avoid updating state after unmounting.
 
-## 10. Typical User Flow
+## 10. Responsive Design
+
+MakerHub supports desktop and mobile layouts based on the HTML5 UP **Future Imperfect** template. Additional responsive styling is maintained in `public/assets/css/makerhub-mobile.css` and loaded after the template stylesheet in `index.html`.
+
+- On smaller screens (up to 980 px), a dedicated navigation bar exposes Home, Projects, and the relevant authentication actions (Login/Register for guests or Create/Logout for signed-in users).
+- On desktop screens, the main content is centered with a maximum width for improved readability.
+- Login and registration layouts have narrower content areas and input fields on desktop.
+- Project images, content, and forms remain accessible on mobile screens.
+
+## 11. Typical User Flow
 
 1. A visitor opens MakerHub and browses the projects catalog.
 2. They open a project to read the full description and existing comments.
@@ -295,7 +308,7 @@ The application fetches projects, likes, and comments from Supabase. After succe
 7. They like a project, or remove their like using the Unlike button.
 8. They log out; the public catalog and project details remain accessible.
 
-## 11. Error and Edge Case Handling
+## 12. Error and Edge Case Handling
 
 The interface accounts for common cases such as:
 
@@ -311,14 +324,14 @@ The interface accounts for common cases such as:
 
 Security-sensitive ownership restrictions are also enforced by Supabase policies, not only by the displayed buttons.
 
-## 12. Deployment
+## 13. Deployment
 
 **Frontend:** [Vercel](https://makerhub-kappa.vercel.app/)  
 **Backend and database:** Supabase
 
 The Vite application is built and deployed on Vercel. Supabase project credentials for the public client are configured using the appropriate `VITE_` environment variables in the deployment settings. Changes pushed to the connected GitHub repository can trigger a new Vercel deployment.
 
-## 13. Project Scope
+## 14. Project Scope
 
 MakerHub focuses on sharing and discussing DIY projects. The current documented functionality includes project CRUD, comments, author display names, and likes. Features such as a dedicated `/my-projects` page, category filtering, full-text search, user avatars, or direct file uploads are **not claimed as implemented** in this README.
 
