@@ -68,7 +68,7 @@ function CreateProject() {
         <div className="field">
           <label htmlFor="imageUrl">Image URL (optional)</label>
           <input
-            type="url"
+            type="text"
             id="imageUrl"
             value={imageUrl}
             onChange={(event) => setImageUrl(event.target.value)}
