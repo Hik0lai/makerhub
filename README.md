@@ -171,10 +171,12 @@ MakerHub uses React Router for client-side navigation.
 | `/projects/:id` | Project details | Public |
 | `/projects/create` | Create project | Authenticated |
 | `/projects/:id/edit` | Edit project | Authenticated; ownership required for editing |
-| `/login` | Login | Public |
-| `/register` | Registration | Public |
+| `/login` | Login | Guest only |
+| `/register` | Registration | Guest only |
 
 The `:id` URL parameter identifies the project to load or edit. Project details and edit pages use `useParams` to read this identifier. Navigation and redirects use React Router.
+
+Authenticated users are redirected from `/login` and `/register` to `/projects` by `GuestRoute`. Routes for creating and editing projects use `ProtectedRoute` to require authentication. The edit page additionally checks project ownership.
 
 ## 5. Projects Catalog and Details Flow
 
